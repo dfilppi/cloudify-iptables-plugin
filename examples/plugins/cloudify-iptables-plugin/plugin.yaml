@@ -49,6 +49,12 @@ node_types:
         type: string
       key_filename:
         type: string
+      default_input_policy:
+        type: string
+        default: ACCEPT   # ACCEPT|DROP
+      default_output_policy:
+        type: string
+        default: ACCEPT   # ACCEPT|DROP
       firewall_rules: 
         description: list of datatypes.Firewall_Rule
         default: []

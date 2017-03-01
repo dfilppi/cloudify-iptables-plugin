@@ -81,11 +81,19 @@ def iptables_add(**kwargs):
                                 rule['interface'], port, disp))
             else:
                 for port in rule['ports']:
-                    sudo("iptables -A {} -p {} -i {} --dport {} -j {}".
+                    sudo("iptables -A {} -p {} -o {} --dport {} -j {}".
                          format(ochain_name, rule['protocol'],
                                 rule['interface'], port, disp))
+
         sudo("iptables -A INPUT -j {}".format(ichain_name))
         sudo("iptables -A OUTPUT -j {}".format(ochain_name))
+
+        if ctx.node.properties['default_output_policy']:
+            sudo("iptables -P OUTPUT {}".format(
+                ctx.node.properties['default_output_policy']))
+        if ctx.node.properties['default_input_policy']:
+            sudo("iptables -P INPUT {}".format(
+                ctx.node.properties['default_input_policy']))
 
 
 @operation

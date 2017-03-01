@@ -30,7 +30,7 @@ node_templates:
       ssh_user: { get_input: ssh_user }
       key_filename: { get_input: ssh_keyfile }
       firewall_rules:
-        - interface: eth0
+        - interface: eth1
           direction: ingress
           protocol: tcp
           allow: false
