@@ -1,0 +1,49 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/3.4/types.yaml
+  - http://www.getcloudify.org/spec/openstack-plugin/1.4/plugin.yaml
+  - http://www.getcloudify.org/spec/fabric-plugin/1.3.1/plugin.yaml
+  - plugins/cloudify-iptables-plugin/plugin.yaml
+
+inputs:
+  ssh_user:
+    description: ssh user
+    default: ubuntu
+  ssh_keyfile:
+    description: ssh key file name
+    default: /home/centos/dfilppi-dc.key
+
+node_templates:
+
+  target_host:
+    type: cloudify.nodes.Compute
+    properties:
+      agent_config:
+        install_method: none
+      ip: 172.16.0.190
+
+  iptables:
+    type: cloudify.nodes.IPTables
+    properties:
+      ip: { get_property: [ target_host, ip ] }
+      ssh_user: { get_input: ssh_user }
+      key_filename: { get_input: ssh_keyfile }
+      firewall_rules:
+        - interface: eth0
+          direction: ingress
+          protocol: tcp
+          allow: false
+          ports: [ 8000 ]
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          inputs:
+            host_ip: { get_property: [ iptables, ip ] } 
+        stop:
+          inputs:
+            host_ip: { get_property: [ iptables, ip ] } 
+    relationships:
+      - target: target_host
+        type: cloudify.relationships.contained_in
+

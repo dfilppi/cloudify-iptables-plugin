@@ -1,0 +1,66 @@
+plugins:
+  iptables:
+    executor: central_deployment_agent
+    source: cloudify-iptables-plugin
+
+data_types:
+  datatypes.FireWall_Rule:
+    properties:
+      interface:
+        description: e.g. eth0, eth1, etc..
+        type: string
+        default: eth0
+      direction:
+        description: enum, either ingress or egress
+        type: string
+        default: ingress
+      protocol:
+        description: enum, tcp or udp
+        type: string
+        default: tcp
+      allow:
+        description: does rule allow or deny traffic
+        type: boolean
+        default: false
+      ports:
+        description: ports to block/allow (list of ints)
+        default: []
+
+  datatypes.Forwarding_Rule:
+    properties:
+      from_interface:
+        type: string
+      to_interface:
+        type: string
+      from_cidr:
+        type: string
+        default: ''
+
+node_types:
+
+  # IPTables implementation based on fabric
+  cloudify.nodes.IPTables:
+    derived_from: cloudify.nodes.SoftwareComponent
+    properties:
+      ip:
+        type: string
+        description: host ip
+      ssh_user:
+        type: string
+      key_filename:
+        type: string
+      firewall_rules: 
+        description: list of datatypes.Firewall_Rule
+        default: []
+      forwarding_rules:
+        description: list of datatypes.Forward_Rule
+        default: []
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:           
+          implementation: iptables.iptables_plugin.tasks.iptables_add
+          inputs:
+            host_ip: 
+              description: the ip to run iptables on
+        stop:
+          implementation: iptables.iptables_plugin.tasks.iptables_remove
